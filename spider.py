@@ -1,74 +1,100 @@
+from general import *
 from urllib.request import urlopen
 from link_finder import LinkFinder
-from domain import *
-from general import *
-
 
 class Spider:
-
-    project_name = ''
-    base_url = ''
+    # Class objesi tanımalama ( tüm örümcekler arasında paylaşılan ortak bilgi )
+    proje_adi = ''
+    base_url = ''  # ana_url
     domain_name = ''
-    queue_file = ''
-    crawled_file = ''
-    queue = set()
-    crawled = set()
+    kuyruk_dosyasi = ''
+    tamamlanan_dosyasi = ''
+    kuyruk = set()
+    tamamlanan = set()
 
-    def __init__(self, project_name, base_url, domain_name):
-        Spider.project_name = project_name
+    def __init__(self, proje_adi, base_url, domain_name):
+        Spider.proje_adi = proje_adi
         Spider.base_url = base_url
         Spider.domain_name = domain_name
-        Spider.queue_file = Spider.project_name + '/queue.txt'
-        Spider.crawled_file = Spider.project_name + '/crawled.txt'
+        Spider.kuyruk_dosyasi = Spider.proje_adi + "/kuyruk.txt"
+        Spider.tamamlanan_dosyasi = Spider.proje_adi + "/tamamlanan.txt"
         self.boot()
-        self.crawl_page('First spider', Spider.base_url)
+        self.crawl_page('First Spider', Spider.base_url)
 
-    # Creates directory and files for project on first run and starts the spider
+
     @staticmethod
     def boot():
-        create_project_dir(Spider.project_name)
-        create_data_files(Spider.project_name, Spider.base_url)
-        Spider.queue = file_to_set(Spider.queue_file)
-        Spider.crawled = file_to_set(Spider.crawled_file)
+        dosya_dizini_olustur(Spider.proje_adi)
+        veri_dosyaları_olustur(Spider.proje_adi, Spider.base_url)
+        Spider.kuyruk = dosyadan_kumeye(Spider.kuyruk_dosyasi)
+        Spider.tamamlanan = dosyadan_kumeye(Spider.tamamlanan_dosyasi)
 
-    # Updates user display, fills queue and updates files
     @staticmethod
     def crawl_page(thread_name, page_url):
-        if page_url not in Spider.crawled:
-            print(thread_name + ' now crawling ' + page_url)
-            print('Queue ' + str(len(Spider.queue)) + ' | Crawled  ' + str(len(Spider.crawled)))
-            Spider.add_links_to_queue(Spider.gather_links(page_url))
-            Spider.queue.remove(page_url)
-            Spider.crawled.add(page_url)
+        if page_url not in Spider.tamamlanan:
+            print(thread_name + " now crawling " + page_url)
+            print('Kuyrukta ', str(len(Spider.kuyruk)) + ' | Crawled ', str(len(Spider.tamamlanan)))
+            try:
+                Spider.add_links_to_kuyruk(Spider.gather_links(page_url))
+                Spider.kuyruk.remove(page_url)
+            except:
+                Spider.kuyruk.remove(page_url)
+
+            Spider.tamamlanan.add(page_url)
             Spider.update_files()
 
-    # Converts raw response data into readable information and checks for proper html formatting
     @staticmethod
     def gather_links(page_url):
         html_string = ''
         try:
             response = urlopen(page_url)
-            if 'text/html' in response.getheader('Content-Type'):
+            # The condition in its IF-statement never returned TRUE because response.getheader("Content-Type") returns text/html; charset=utf-8.
+            if 'text/html' in response.getheader('Content-Type'):  # if response.getheader('Content-Type') == 'text/html':
                 html_bytes = response.read()
-                html_string = html_bytes.decode("utf-8")
+                html_string = html_bytes.decode('utf-8')
             finder = LinkFinder(Spider.base_url, page_url)
             finder.feed(html_string)
         except Exception as e:
+            # print('Error: sayfayı crawl edemiyorum')
+            # print("response.headers['Content-Type']: ", response.headers['Content-Type'])
             print(str(e))
             return set()
-        return finder.page_links()
+        return finder.page_link()
 
-    # Saves queue data to project files
     @staticmethod
-    def add_links_to_queue(links):
-        for url in links:
-            if (url in Spider.queue) or (url in Spider.crawled):
+    def add_links_to_kuyruk(links):
+        for link in links:
+            if link in Spider.kuyruk:
                 continue
-            if Spider.domain_name != get_domain_name(url):
+            if link in Spider.tamamlanan:
                 continue
-            Spider.queue.add(url)
+            if Spider.domain_name not in link:
+                continue
+
+            Spider.kuyruk.add(link)
 
     @staticmethod
     def update_files():
-        set_to_file(Spider.queue, Spider.queue_file)
-        set_to_file(Spider.crawled, Spider.crawled_file)
+        kumeden_dosyaya(Spider.kuyruk, Spider.kuyruk_dosyasi)
+        kumeden_dosyaya(Spider.tamamlanan, Spider.tamamlanan_dosyasi)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

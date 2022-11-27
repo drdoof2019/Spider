@@ -1,18 +1,19 @@
 from urllib.parse import urlparse
 
-
-# Get domain name (example.com)
-def get_domain_name(url):
+# domaini tespit edelim (sivas.edu.tr)
+def get_domain(url):
     try:
-        results = get_sub_domain_name(url).split('.')
-        return results[-2] + '.' + results[-1]
+        result = get_sub_domain(url).split('.')
+        return result[-3] + '.' + result[-2] + '.' + result[-1]   # ŞOKOMELLİ
     except:
         return ''
 
 
-# Get sub domain name (name.example.com)
-def get_sub_domain_name(url):
+# Sub_domaini tespit edelim (muhendislik.sivas.edu.tr) (asdads.sivas.com)
+def get_sub_domain(url):
     try:
         return urlparse(url).netloc
     except:
         return ''
+
+# print(get_domain("https://muhendislik.sivas.edu.tr/elektrik---elektronik-muhendisligi-bolumu"))

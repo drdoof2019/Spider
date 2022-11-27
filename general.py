@@ -1,51 +1,64 @@
 import os
 
+# eğer proje dizini yoksa dizini oluşturur (proje adı ile)
+def dosya_dizini_olustur(dizin_adi):
+    if not os.path.exists(dizin_adi):
+        print(f"Dizin oluşturuluyor: {dizin_adi}")
+        os.makedirs(dizin_adi)
 
-# Each website is a separate project (folder)
-def create_project_dir(directory):
-    if not os.path.exists(directory):
-        print('Creating directory ' + directory)
-        os.makedirs(directory)
+# dosya_dizini_olustur("sivasgovtr")
 
+def veri_dosyaları_olustur(proje_adi, ana_url):
+    kuyruk = proje_adi + '\kuyruk.txt'
+    tamamlanan = proje_adi + r'\tamamlanan.txt'
 
-# Create queue and crawled files (if not created)
-def create_data_files(project_name, base_url):
-    queue = os.path.join(project_name , 'queue.txt')
-    crawled = os.path.join(project_name,"crawled.txt")
-    if not os.path.isfile(queue):
-        write_file(queue, base_url)
-    if not os.path.isfile(crawled):
-        write_file(crawled, '')
+    if not os.path.isfile(kuyruk):
+        dosya_yazdirma(kuyruk, ana_url)
+    if not os.path.isfile(tamamlanan):
+        dosya_yazdirma(tamamlanan, '')
 
+# dosya oluşturma fonksiyonu
+def dosya_yazdirma(path, veri):
+    with open(path, 'w', encoding='utf-8') as dosya:
+        dosya.write(veri)
 
-# Create a new file
-def write_file(path, data):
-    with open(path, 'w') as f:
-        f.write(data)
+# veri_dosyaları_olustur("sivasgovtr", "https://www.sivas.edu.tr/")
 
-
-# Add data onto an existing file
-def append_to_file(path, data):
-    with open(path, 'a') as file:
-        file.write(data + '\n')
-
-
-# Delete the contents of a file
-def delete_file_contents(path):
-    open(path, 'w').close()
+# varolan dosyaya veri ekleme
+def dosya_veri_ekleme(path, veri):
+    with open(path, "a", encoding='utf-8') as dosya:
+        dosya.write(veri + "\n")
 
 
-# Read a file and convert each line to set items
-def file_to_set(file_name):
-    results = set()
-    with open(file_name, 'rt') as f:
-        for line in f:
-            results.add(line.replace('\n', ''))
-    return results
+# dosyanın içeriğini temizleyen fonksiyon
+def dosya_icerik_silme(path):
+    with open(path, 'w', encoding='utf-8') as dosya:
+        pass
 
 
-# Iterate through a set, each item will be a line in a file
-def set_to_file(links, file_name):
-    with open(file_name,"w") as f:
-        for l in sorted(links):
-            f.write(l+"\n")
+# bir dosyayı okuyup her satırını set(küme)'ye çeviren f'n
+def dosyadan_kumeye(dosya_ismi):
+    result = set()
+    with open(dosya_ismi, 'rt', encoding='utf-8') as dosya:
+        for line in dosya:
+            result.add(line.replace('\n', ''))
+    return result
+
+
+# bir set'in üzerinde gezerek içerisindeki her elemanı yeni bir satır olacak şekilde dosyaya yaz
+def kumeden_dosyaya(links, path):
+    dosya_icerik_silme(path)
+    for link in sorted(links):
+        dosya_veri_ekleme(path, link)
+
+
+
+
+
+
+
+
+
+
+
+
